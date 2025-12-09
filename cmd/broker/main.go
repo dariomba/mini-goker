@@ -3,13 +3,13 @@ package main
 import (
 	"log"
 
-	"github.com/dariomba/mini-goker/internal/broker"
+	"github.com/dariomba/mini-goker/internal/transport"
 )
 
 func main() {
 	listenAddr := ":9092"
 
-	server := broker.NewServer(listenAddr)
+	server := transport.NewServer(listenAddr)
 
 	log.Fatal(server.Start())
 }
