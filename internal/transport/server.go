@@ -1,20 +1,24 @@
 package transport
 
 import (
+	"context"
 	"fmt"
-	"io"
 	"net"
+
+	"github.com/dariomba/mini-goker/internal/routing/protocol"
 )
 
 type Server struct {
 	listenAddr string
 	listener   net.Listener
+	handler    Handler
 	quitch     chan struct{}
 }
 
-func NewServer(listenAddr string) *Server {
+func NewServer(listenAddr string, handler Handler) *Server {
 	return &Server{
 		listenAddr: listenAddr,
+		handler:    handler,
 		quitch:     make(chan struct{}),
 	}
 }
@@ -53,20 +57,35 @@ func (s *Server) acceptLoop() {
 func (s *Server) hanndleConnection(conn net.Conn) {
 	defer conn.Close()
 
-	buffer := make([]byte, 1024)
 	for {
-		n, err := conn.Read(buffer)
+		req, err := protocol.DecodeFrame(conn)
 		if err != nil {
-			if err == io.EOF {
-				fmt.Println("client disconnected")
-				return
-			}
-
-			fmt.Println("error reading conn:", err)
 			return
 		}
 
-		fmt.Printf("received: %s\n", buffer[:n])
-		conn.Write([]byte("message received\n"))
+		resp, err := s.handler.Handle(context.TODO(), req)
+		if err != nil {
+			protocol.WriteError(conn, err)
+			continue
+		}
+
+		protocol.EncodeFrame(conn, resp)
 	}
+
+	// buffer := make([]byte, 1024)
+	// for {
+	// 	n, err := conn.Read(buffer)
+	// 	if err != nil {
+	// 		if err == io.EOF {
+	// 			fmt.Println("client disconnected")
+	// 			return
+	// 		}
+
+	// 		fmt.Println("error reading conn:", err)
+	// 		return
+	// 	}
+
+	// 	fmt.Printf("received: %s\n", buffer[:n])
+	// 	conn.Write([]byte("message received\n"))
+	// }
 }
