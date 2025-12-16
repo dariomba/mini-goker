@@ -60,6 +60,7 @@ func (s *Server) hanndleConnection(conn net.Conn) {
 	for {
 		req, err := protocol.DecodeFrame(conn)
 		if err != nil {
+			protocol.WriteError(conn, err)
 			return
 		}
 
@@ -71,21 +72,4 @@ func (s *Server) hanndleConnection(conn net.Conn) {
 
 		protocol.EncodeFrame(conn, resp)
 	}
-
-	// buffer := make([]byte, 1024)
-	// for {
-	// 	n, err := conn.Read(buffer)
-	// 	if err != nil {
-	// 		if err == io.EOF {
-	// 			fmt.Println("client disconnected")
-	// 			return
-	// 		}
-
-	// 		fmt.Println("error reading conn:", err)
-	// 		return
-	// 	}
-
-	// 	fmt.Printf("received: %s\n", buffer[:n])
-	// 	conn.Write([]byte("message received\n"))
-	// }
 }

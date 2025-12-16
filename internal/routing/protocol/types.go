@@ -1,7 +1,7 @@
 package protocol
 
 const (
-	MsgProduce MessageType = 1
-	MsgFetch   MessageType = 2
-	MsgMeta    MessageType = 3
+	MsgProduce  MessageType = 1
+	MsgConsume  MessageType = 2
+	MsgMetadata MessageType = 3
 )
